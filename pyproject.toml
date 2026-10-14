@@ -1,0 +1,36 @@
+[project]
+name = "condex"
+version = "0.1.0"
+description = "Contact-annotated judge for a frozen dexterous VLA (RLDX-1 on GR-1 Tabletop)"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "pillow>=10.0",
+    "pyyaml>=6.0",
+    "pyarrow>=14",
+]
+
+[project.optional-dependencies]
+# Judge / planner clients (sim venv on the cluster and locally).
+llm = [
+    "anthropic>=0.70",
+    "openai>=1.40",  # only for the vLLM-served Qwen3-VL (OpenAI-compatible endpoint)
+]
+# LoRA fine-tune of the judge (cluster, own venv: scripts/install_judge.sh).
+train = [
+    "torch>=2.5",
+    "transformers>=4.57",
+    "peft>=0.17",
+    "accelerate>=1.0",
+]
+dev = ["pytest>=8.0", "mujoco>=3.2"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["condex*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

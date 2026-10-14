@@ -1,0 +1,6 @@
+# Copy to configs/costcaps.yaml (gitignored) and set the caps. Planner and Claude judge refuse to run without it.
+run_cap_usd: 2.0
+global_cap_usd: 50.0
+global_ledger: ~/condex_ledger.jsonl
+prices:   # USD per million tokens (Claude API list prices, 2026-10; prompts <= 100K tokens)
+  claude-haiku-5-5: {input_per_mtok: 0.10, output_per_mtok: 0.50}

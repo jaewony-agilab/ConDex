@@ -1,0 +1,20 @@
+# Default overlay style (PLAN.md §4). Frozen after Phase 1 step 3; every rendered dataset records
+# this file's style hash (condex.render.Style.hash). A new style = a new file + a re-render job.
+name: default
+force_clip_n: 10.0          # CALIBRATE: 95th percentile of fingertip |F| in contact (Phase 1 step 4)
+contact_threshold_n: 0.5
+taxel_aggregation: sum
+self_contact: true          # contacts with other robot links count (fingertips pressed together)
+anchor: pad_center          # GR-1 fingertip links are intermediate links: their origin is the middle knuckle
+shaft_frac: 0.015           # of the shorter side at the judge's input resolution
+head_ratio: 3.0
+outline_px: 1.0             # model-input pixels
+arrow_min_frac: 0.05
+arrow_max_frac: 0.16
+probe_m: 0.02
+palm_bins_n: [0.5, 3.0, 8.0]
+palm_radius_frac: [0.012, 0.02, 0.028]
+occlusion_tol_m: 0.01
+dash_px: 3.0
+mark_lost: true
+judge_input: {factor: 32, min_pixels: 65536, max_pixels: 262144}

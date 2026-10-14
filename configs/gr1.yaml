@@ -1,0 +1,97 @@
+# GR-1 Tabletop (robocasa-gr1-tabletop-tasks on robosuite 1.5.1 / MuJoCo) + frozen RLDX-1-FT-GR1.
+# Fields marked CALIBRATE are placeholders until Phase 0 (scripts/probe_sensors.py, inspect output).
+
+bench: gr1
+model_path: RLWRLD/RLDX-1-FT-GR1
+embodiment_tag: GENERAL_EMBODIMENT
+env_prefix: gr1_unified
+seed: 42                 # RLDX-1 eval default (rollout_policy --seed 42, env_idx 0)
+n_action_steps: 16       # run_scripts/eval/gr1_tabletop/eval_gr1.sh
+max_episode_steps: 720   # eval_gr1.sh
+stop_on_success: true    # RLDX-1 counts success at any step, so stopping early leaves SR unchanged
+
+# The 24 tasks of RLDX-1 run_scripts/eval/gr1_tabletop/eval_gr1.sh (commit cf67c31), same order.
+tasks:
+  - PnPCupToDrawerClose_GR1ArmsAndWaistFourierHands_Env
+  - PnPPotatoToMicrowaveClose_GR1ArmsAndWaistFourierHands_Env
+  - PnPMilkToMicrowaveClose_GR1ArmsAndWaistFourierHands_Env
+  - PnPBottleToCabinetClose_GR1ArmsAndWaistFourierHands_Env
+  - PnPWineToCabinetClose_GR1ArmsAndWaistFourierHands_Env
+  - PnPCanToDrawerClose_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromCuttingboardToBasketSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromCuttingboardToCardboardboxSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromCuttingboardToPanSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromCuttingboardToPotSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromCuttingboardToTieredbasketSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromPlacematToBasketSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromPlacematToBowlSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromPlacematToPlateSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromPlacematToTieredshelfSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromPlateToBowlSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromPlateToCardboardboxSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromPlateToPanSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromPlateToPlateSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromTrayToCardboardboxSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromTrayToPlateSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromTrayToPotSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromTrayToTieredbasketSplitA_GR1ArmsAndWaistFourierHands_Env
+  - PosttrainPnPNovelFromTrayToTieredshelfSplitA_GR1ArmsAndWaistFourierHands_Env
+
+# Published per-task SR of RLDX-1-FT-GR1 (Phase 0 gate: ours within 10pp). Fill from the RLDX-1
+# report before the repro run; the plan quotes 58.7% as the average (prior).
+published_sr: {}
+published_mean_sr: 0.587
+
+# Set after the Phase 0 sweep (scripts/summarize.py --select): executor-alone SR in [0.3, 0.7].
+selected_tasks: []
+select_band: [0.3, 0.7]
+
+hands:
+  left:  {action: action.left_hand,  state: state.left_hand,  arm: action.left_arm}
+  right: {action: action.right_hand, state: state.right_hand, arm: action.right_arm}
+
+taxels:
+  # Body-name suffixes in robosuite 1.5.1 grippers/fourier_{left,right}_hand.xml (checked in the MJCF).
+  links:
+    right: {thumb: R_thumb_distal_link, index: R_index_intermediate_link, middle: R_middle_intermediate_link,
+            ring: R_ring_intermediate_link, pinky: R_pinky_intermediate_link, palm: r_palm}
+    left:  {thumb: L_thumb_distal_link, index: L_index_intermediate_link, middle: L_middle_intermediate_link,
+            ring: L_ring_intermediate_link, pinky: L_pinky_intermediate_link, palm: l_palm}
+  robot_prefixes: [robot0_, gripper0_]   # CALIBRATE: confirm with the probe's body list
+  grid_axes: null                        # null = the two longest bounding-box axes of each fingertip
+  exclude_robot_contacts: false          # false: other robot links count (fingertips pressed together register)
+
+closure:
+  # 6-D hand command; robosuite FourierHand.format_action maps it to 11 joints. Dims 1-4 are taken
+  # as finger flexion (CALIBRATE: confirm the order with the probe's command percentiles).
+  flexion_dims: [1, 2, 3, 4]
+  open_value: 0.0          # CALIBRATE
+  closed_value: 1.5        # CALIBRATE
+  close_threshold: 0.6
+  open_threshold: 0.3
+  settle_vel_eps: 0.001
+  settle_steps: 3
+  max_settle_steps: 30
+
+record:
+  cameras:
+    ego_view:          {source: obs, obs_key: video.ego_view_pad_res256_freq20, camera: egoview, raw: [1280, 800],
+                        depth: true, depth_raw_scale: 0.5, stride: 1}
+    eye_in_left_hand:  {source: render, camera: eye_in_left_hand,  size: [256, 256], depth: true, stride: 5}
+    eye_in_right_hand: {source: render, camera: eye_in_right_hand, size: [256, 256], depth: true, stride: 5}
+
+events: {reach_m: 0.05, lift_m: 0.03, drop_window: 10}
+labels: {lift_m: 0.03, lift_horizon: 60, hold_steps: 30, release_horizon: 40, still_steps: 10,
+         still_speed_mps: 0.02, reach_limit_m: 0.75, fall_drop_m: 0.10, contact_threshold_n: 0.5, hz: 20.0}
+split: {train: 0.7, val: 0.15}   # rest = held-out; by hash of (task, episode seed)
+
+judge:
+  cameras: [ego_view, eye_in_left_hand, eye_in_right_hand]
+  style: configs/style/default.yaml
+  vlm_model: Qwen/Qwen3-VL-8B-Instruct
+  claude_model: claude-haiku-5-5
+  claude_effort: low
+
+gate: {max_retries: 2}
+recovery: {open_steps: 10, retreat_steps: 20, hold_steps: 5}
+planner: {model: claude-haiku-5-5, effort: low}
