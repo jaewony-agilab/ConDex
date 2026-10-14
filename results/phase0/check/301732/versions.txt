@@ -1,0 +1,1 @@
+mujoco 3.2.6 numpy 1.26.4 pyarrow 25.0.1

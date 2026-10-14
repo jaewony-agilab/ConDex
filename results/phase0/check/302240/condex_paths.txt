@@ -1,0 +1,3 @@
+VLM_PY=/mnt/lustre/slurm/users/jaewony/workspace/agi/ConDex/third_party/judge_venv/bin/python
+RLDX=/mnt/lustre/slurm/users/jaewony/workspace/agi/ConDex/third_party/RLDX-1
+SIM_PY=/mnt/lustre/slurm/users/jaewony/workspace/agi/ConDex/third_party/RLDX-1/rldx/eval/sim/robocasa-gr1-tabletop-tasks/robocasa_uv/.venv/bin/python
