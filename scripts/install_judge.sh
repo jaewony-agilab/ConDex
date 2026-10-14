@@ -8,7 +8,8 @@ source "$REPO/scripts/load_env.sh" "$REPO"   # big-disk paths from env.local.sh
 TP="${CONDEX_THIRD_PARTY:-$REPO/third_party}"
 VENV="$TP/judge_venv"
 uv venv "$VENV" --python 3.10 --allow-existing
-uv pip install --python "$VENV/bin/python" "vllm==0.11.0" "peft>=0.17" "accelerate>=1.0" -e "$REPO[llm]"
+# transformers: vllm 0.11.0 sets no upper bound but breaks on 5.x (tokenizer API); Qwen3-VL needs >= 4.57.
+uv pip install --python "$VENV/bin/python" "vllm==0.11.0" "transformers>=4.57,<5" "peft>=0.17" "accelerate>=1.0" -e "$REPO[llm]"
 "$VENV/bin/python" -c "import vllm, transformers, peft, torch; from transformers import Qwen3VLForConditionalGeneration; print('vllm', vllm.__version__, 'transformers', transformers.__version__, 'peft', peft.__version__, 'torch', torch.__version__)"
 "$VENV/bin/python" -c "from huggingface_hub import snapshot_download as s; print(s('Qwen/Qwen3-VL-8B-Instruct'))"
 uv pip freeze --python "$VENV/bin/python" > "$TP/judge_freeze.txt"

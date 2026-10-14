@@ -3,7 +3,7 @@
 #   sbatch slurm/install.sbatch   (or: bash scripts/install_rldx.sh on any node with internet)
 # 1. RLDX-1 at a pinned commit + its model venv (inference server; condex is NOT installed there)
 # 2. GR-1 Tabletop sim venv via RLDX-1's own setup script (robosuite 1.5.1, robocasa-gr1-tabletop-tasks)
-# 3. condex[llm] into the sim venv (harness, sensors, recorder, judge/planner clients)
+# 3. RLDX-1 runtime deps (for the rldx client) + condex[llm] into the sim venv (harness, sensors, clients)
 # 4. RLWRLD/RLDX-1-FT-GR1 into the HF cache
 # Rendering needs EGL and is checked at the start of every GPU job (slurm/common.sh), not here.
 # Paths (HF_HOME, UV_CACHE_DIR, CONDEX_THIRD_PARTY, ...) come from <repo>/env.local.sh (see env.example.sh).
@@ -51,7 +51,18 @@ for patch in "$RLDX"/run_scripts/eval/gr1_tabletop/patches/*.patch; do
   else echo "patch $(basename "$patch") neither applies nor is applied"; exit 1; fi
 done
 
-# 3. condex into the sim venv (not [dev]: it would pull a newer mujoco than the sim pins)
+# 3. RLDX-1's runtime deps into the sim venv. Its setup installs rldx there with --no-deps, but any
+#    rldx import (PolicyClient, MultiStepWrapper) loads rldx/__init__ -> the whole model package.
+#    The sim's pins are kept (torch 2.5.1, gymnasium 0.29.1, ...); training-only deps are skipped;
+#    transformers/tokenizers move to RLDX-1's versions and fsspec down to what datasets 3.6.0 allows.
+uv pip freeze --python "$SIM_PY" | grep -vE '^-e |@ file|^(transformers|tokenizers|fsspec)==' > "$TP/sim_pins.txt"
+uv pip install --python "$SIM_PY" -c "$TP/sim_pins.txt" "transformers==4.57.0" "tyro==0.9.17" \
+  "diffusers==0.35.1" "dm-tree==0.1.8" "albumentations==1.4.18" "peft==0.17.1" "datasets==3.6.0" \
+  "lmdb==1.7.5" "einops==0.8.1" "omegaconf==2.3.0" "click==8.1.8" "matplotlib==3.10.1" "moviepy==1.0.3" \
+  "opencv-contrib-python-headless==4.11.0.86" "accelerate>=0.34"
+"$SIM_PY" -c "from rldx.policy.server_client import PolicyClient; from rldx.eval.sim.wrapper.multistep_wrapper import MultiStepWrapper"
+
+# condex into the sim venv (not [dev]: it would pull a newer mujoco than the sim pins)
 uv pip install --python "$SIM_PY" -e "$REPO[llm]" pytest
 "$SIM_PY" -c "import condex, anthropic, openai, mujoco, pyarrow; print('condex OK; mujoco', mujoco.__version__)"
 uv pip freeze --python "$SIM_PY" > "$TP/sim_gr1_freeze.txt"
