@@ -57,16 +57,17 @@ taxels:
             ring: R_ring_intermediate_link, pinky: R_pinky_intermediate_link, palm: r_palm}
     left:  {thumb: L_thumb_distal_link, index: L_index_intermediate_link, middle: L_middle_intermediate_link,
             ring: L_ring_intermediate_link, pinky: L_pinky_intermediate_link, palm: l_palm}
-  robot_prefixes: [robot0_, gripper0_]   # CALIBRATE: confirm with the probe's body list
+  robot_prefixes: [robot0_, gripper0_]   # probe 302388: robot bodies are robot0_* / gripper0_* (D8)
   grid_axes: null                        # null = the two longest bounding-box axes of each fingertip
   exclude_robot_contacts: false          # false: other robot links count (fingertips pressed together register)
 
 closure:
-  # 6-D hand command; robosuite FourierHand.format_action maps it to 11 joints. Dims 1-4 are taken
-  # as finger flexion (CALIBRATE: confirm the order with the probe's command percentiles).
-  flexion_dims: [1, 2, 3, 4]
-  open_value: 0.0          # CALIBRATE
-  closed_value: 1.5        # CALIBRATE
+  # 6-D hand command; robosuite FourierHand.format_action maps it to 11 joints. Calibrated from
+  # probe 302388 (D8): dims 0-3 are the four fingers, commanded -1.5 (open) .. +1.5 (closed);
+  # dim 4 (thumb bend, +-3) and dim 5 (thumb yaw, ~3) are left out of the closure.
+  flexion_dims: [0, 1, 2, 3]
+  open_value: -1.5
+  closed_value: 1.5
   close_threshold: 0.6
   open_threshold: 0.3
   settle_vel_eps: 0.001
