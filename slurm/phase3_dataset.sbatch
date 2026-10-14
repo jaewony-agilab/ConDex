@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 #SBATCH -J condex_dataset
-#SBATCH --cpus-per-task=8 --mem=32G -t 6:00:00
+#SBATCH -p cpu -t 6:00:00
+#SBATCH --wckey=project-short-name:sub_4dpdata
 #SBATCH -o slurm-%x-%j.out
+# Cluster rules: --wckey is required; no CPU/memory requests (per-GPU defaults apply).
 # Phase 3 inputs (CPU): LABELS=<labels.jsonl> -> per-condition JSONL + images in $CONDEX_SCRATCH/datasets/<name>.
 source slurm/common.sh
 NAME="${NAME:-$JOB}"

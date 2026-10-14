@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 #SBATCH -J condex_render
-#SBATCH --cpus-per-task=8 --mem=32G -t 4:00:00
+#SBATCH -p cpu -t 4:00:00
+#SBATCH --wckey=project-short-name:sub_4dpdata
 #SBATCH -o slurm-%x-%j.out
+# Cluster rules: --wckey is required; no CPU/memory requests (per-GPU defaults apply).
 # Phase 1 steps 2-4 (CPU): render 20 boundaries/task with STYLE, survival check, dataset statistics.
 source slurm/common.sh
 STYLE="${STYLE:-configs/style/default.yaml}"

@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 #SBATCH -J condex_labels
-#SBATCH --cpus-per-task=4 --mem=16G -t 2:00:00
+#SBATCH -p cpu -t 2:00:00
+#SBATCH --wckey=project-short-name:sub_4dpdata
 #SBATCH -o slurm-%x-%j.out
+# Cluster rules: --wckey is required; no CPU/memory requests (per-GPU defaults apply).
 # Phase 2 (CPU): labels from the recorder output; labels.jsonl stays in scratch, the summary is committed.
 source slurm/common.sh
 "$PY" scripts/build_labels.py "$CONDEX_RAW/phase1" --out "$CONDEX_SCRATCH/labels/$JOB"

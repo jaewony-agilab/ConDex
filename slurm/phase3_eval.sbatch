@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 #SBATCH -J condex_eval
-#SBATCH --gres=gpu:1 --cpus-per-task=8 --mem=64G -t 6:00:00
+#SBATCH --gres=gpu:1 -t 6:00:00
+#SBATCH --wckey=project-short-name:sub_4dpdata
 #SBATCH -o slurm-%x-%j.out
+# Cluster rules: --wckey is required; no CPU/memory requests (per-GPU defaults apply).
 # Phase 3: score a judge. DATASET=<name> CONDITION=plain|text|overlay JUDGE=vlm|claude SPLIT=heldout
 # ADAPTER=<adapter dir> (optional: serve a LoRA instead of the frozen model).
 source slurm/common.sh

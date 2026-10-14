@@ -44,13 +44,13 @@ One-time, from a clean clone:
 
 ```bash
 cp env.example.sh env.local.sh        # gitignored: set BIG to the big disk (HF cache, uv cache, raw episodes, scratch)
-sbatch -p <part> -A <acct> slurm/install.sbatch          # RLDX-1 @ cf67c31, sim venv, condex, checkpoint; then vLLM + peft + Qwen3-VL-8B
-                                                          # (WHAT=rldx|judge to run one; node needs internet)
-sbatch -p <part> -A <acct> slurm/phase0_check.sbatch     # GPU node: EGL render check + test suite in the sim venv
+sbatch slurm/install.sbatch                    # cpu partition: RLDX-1 @ cf67c31, sim venv, condex, checkpoint; then vLLM + peft + Qwen3-VL-8B
+                                               # (WHAT=rldx|judge to run one; node needs internet)
+sbatch -p <gpu part> slurm/phase0_check.sbatch # GPU node: EGL render check + test suite in the sim venv
 cp configs/costcaps.example.yaml configs/costcaps.yaml                     # set caps; ANTHROPIC_API_KEY in the env
 ```
 
-`env.local.sh` is sourced by the install scripts and by every sbatch job (`slurm/common.sh`). It sets `HF_HOME`, `UV_CACHE_DIR`, `CONDEX_RAW` (raw episodes) and `CONDEX_SCRATCH` (datasets, adapters, logs); without it they default to `$HOME`. Pass partition and account as `sbatch -p … -A …`.
+`env.local.sh` is sourced by the install scripts and by every sbatch job (`slurm/common.sh`). It sets `HF_HOME`, `UV_CACHE_DIR`, `CONDEX_RAW` (raw episodes) and `CONDEX_SCRATCH` (datasets, adapters, logs); without it they default to `$HOME`. Every sbatch header carries `--wckey=project-short-name:sub_4dpdata` and requests no CPUs or memory (this cluster gives the per-GPU default). CPU-only jobs set `-p cpu` themselves. For GPU jobs, give the GPU partition with `sbatch -p <gpu part> …`, or `export SBATCH_PARTITION=<gpu part>` in `~/.bashrc`.
 
 | Phase | Job | Then |
 |---|---|---|

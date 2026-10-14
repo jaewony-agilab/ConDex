@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 #SBATCH -J condex_lora
-#SBATCH --gres=gpu:a100:1 --cpus-per-task=8 --mem=96G -t 24:00:00
+#SBATCH --gres=gpu:1 -t 24:00:00
+#SBATCH --wckey=project-short-name:sub_4dpdata
 #SBATCH -o slurm-%x-%j.out
+# Cluster rules: --wckey is required; no CPU/memory requests (per-GPU defaults apply).
 # Phase 3 step 2: DATASET=<name> CONDITION=plain|text|overlay SEED=0|1. Adapter -> $CONDEX_SCRATCH/adapters.
 source slurm/common.sh
 OUT="$CONDEX_SCRATCH/adapters/$DATASET/${CONDITION}_s${SEED:-0}"

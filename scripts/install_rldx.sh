@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Unattended install from a clean clone (Linux, CUDA 12.x, uv >= 0.8.4). CPU node is fine:
-#   srun --cpus-per-task=8 --mem=32G -t 4:00:00 bash scripts/install_rldx.sh
+#   sbatch slurm/install.sbatch   (or: bash scripts/install_rldx.sh on any node with internet)
 # 1. RLDX-1 at a pinned commit + its model venv (inference server; condex is NOT installed there)
 # 2. GR-1 Tabletop sim venv via RLDX-1's own setup script (robosuite 1.5.1, robocasa-gr1-tabletop-tasks)
 # 3. condex[llm] into the sim venv (harness, sensors, recorder, judge/planner clients)
