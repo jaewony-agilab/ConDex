@@ -1,6 +1,6 @@
 # Sourced by every sbatch script. Starts services on this node and cleans them up on exit.
-# Headers carry the required --wckey and no CPU/memory requests (per-GPU defaults). GPU partition:
-# sbatch -p <gpu part> ... (or SBATCH_PARTITION); CPU-only jobs set -p cpu in their header.
+# Headers carry only portable flags; submit with slurm/submit.sh cpu|gpu, which adds this cluster's
+# partition/wckey/CPU flags from env.local.sh (CONDEX_SBATCH_CPU / CONDEX_SBATCH_GPU).
 set -euo pipefail
 
 REPO="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"

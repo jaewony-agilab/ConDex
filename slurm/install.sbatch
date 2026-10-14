@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 #SBATCH -J condex_install
-#SBATCH -p cpu -t 6:00:00
-#SBATCH --wckey=project-short-name:sub_4dpdata
+#SBATCH -t 6:00:00
 #SBATCH -o slurm-%x-%j.out
-# Cluster rules: --wckey is required; no CPU/memory requests (per-GPU defaults apply).
-# One-time install from a clean clone, without srun: sbatch slurm/install.sbatch
+# One-time install from a clean clone, without srun: slurm/submit.sh cpu slurm/install.sbatch
+# (partition/wckey/CPUs come from env.local.sh).
 # Needs internet on the node (GitHub, PyPI, Hugging Face) and env.local.sh for the big-disk paths.
 # WHAT=rldx | judge | all (default all).
 set -euo pipefail

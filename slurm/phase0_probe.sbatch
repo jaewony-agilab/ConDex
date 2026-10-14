@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH -J condex_probe
 #SBATCH --gres=gpu:1 -t 2:00:00
-#SBATCH --wckey=project-short-name:sub_4dpdata
 #SBATCH -o slurm-%x-%j.out
-# Cluster rules: --wckey is required; no CPU/memory requests (per-GPU defaults apply).
+# Submit: slurm/submit.sh gpu slurm/phase0_probe.sbatch  (partition/wckey/CPUs come from env.local.sh)
 # Phase 0 step 2 + calibration: sensors, step-time overhead, command/force percentiles, overlay frames.
 source slurm/common.sh
 start_policy_server

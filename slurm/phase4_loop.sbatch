@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH -J condex_loop
 #SBATCH --array=0-15 --gres=gpu:1 -t 24:00:00
-#SBATCH --wckey=project-short-name:sub_4dpdata
 #SBATCH -o slurm-%x-%A_%a.out
-# Cluster rules: --wckey is required; no CPU/memory requests (per-GPU defaults apply).
+# Submit: slurm/submit.sh gpu slurm/phase4_loop.sbatch  (partition/wckey/CPUs come from env.local.sh)
 # Phase 4: CONDITION=alone|plain|overlay|oracle|text JUDGE=vlm|claude SEED=42 EPISODES=20 (screening) / 50 (full)
 # ADAPTER=<adapter dir> to judge with a LoRA. EXTRA="--no-recovery" | "--no-prev-frames" for ablations.
 source slurm/common.sh

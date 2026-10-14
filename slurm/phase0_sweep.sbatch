@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH -J condex_sweep
 #SBATCH --array=0-23 --gres=gpu:1 -t 8:00:00
-#SBATCH --wckey=project-short-name:sub_4dpdata
 #SBATCH -o slurm-%x-%A_%a.out
-# Cluster rules: --wckey is required; no CPU/memory requests (per-GPU defaults apply).
+# Submit: slurm/submit.sh gpu slurm/phase0_sweep.sbatch  (partition/wckey/CPUs come from env.local.sh)
 # Phase 0 steps 1+5: executor alone, every task, 20 episodes, 1 seed, recorded (Section 3 format).
 # Gives the reproduction numbers (vs published SR) and the task-selection SR in one pass.
 source slurm/common.sh

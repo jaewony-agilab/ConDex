@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH -J condex_collect
 #SBATCH --array=0-15 --gres=gpu:1 -t 24:00:00
-#SBATCH --wckey=project-short-name:sub_4dpdata
 #SBATCH -o slurm-%x-%A_%a.out
-# Cluster rules: --wckey is required; no CPU/memory requests (per-GPU defaults apply).
+# Submit: slurm/submit.sh gpu slurm/phase1_collect.sbatch  (partition/wckey/CPUs come from env.local.sh)
 # Phase 1 step 1: executor-alone rollouts on the selected tasks, fixed seed list (episode ids from START).
 source slurm/common.sh
 TASK="$(task_at selected_tasks "${SLURM_ARRAY_TASK_ID:-0}")"

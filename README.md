@@ -23,7 +23,7 @@ condex/
 configs/gr1.yaml        tasks, hands, taxel links, closure (CALIBRATE fields), cameras, labels, judge
 configs/style/          overlay style configs (one file per style; hash recorded in every dataset)
 scripts/                install_*.sh and one script per phase step (below)
-slurm/                  common.sh + one sbatch per job
+slurm/                  common.sh, submit.sh (adds cluster flags from env.local.sh) + one sbatch per job
 results/<phase>/<job>/  small outputs (committed); raw episodes, datasets, adapters stay on cluster storage
 ```
 
@@ -43,28 +43,28 @@ python scripts/summarize.py sr results/phase0/sweep      # tables from committed
 One-time, from a clean clone:
 
 ```bash
-cp env.example.sh env.local.sh        # gitignored: set BIG to the big disk (HF cache, uv cache, raw episodes, scratch)
-sbatch slurm/install.sbatch                    # cpu partition: RLDX-1 @ cf67c31, sim venv, condex, checkpoint; then vLLM + peft + Qwen3-VL-8B
-                                               # (WHAT=rldx|judge to run one; node needs internet)
-sbatch -p <gpu part> slurm/phase0_check.sbatch # GPU node: EGL render check + test suite in the sim venv
+cp env.example.sh env.local.sh                  # gitignored: set BIG (HF cache, uv cache, raw episodes, scratch) and the sbatch flags
+slurm/submit.sh cpu slurm/install.sbatch        # RLDX-1 @ cf67c31, sim venv, condex, checkpoint; then vLLM + peft + Qwen3-VL-8B
+                                                # (WHAT=rldx|judge to run one; node needs internet)
+slurm/submit.sh gpu slurm/phase0_check.sbatch   # GPU node: EGL render check + test suite in the sim venv
 cp configs/costcaps.example.yaml configs/costcaps.yaml                     # set caps; ANTHROPIC_API_KEY in the env
 ```
 
-`env.local.sh` is sourced by the install scripts and by every sbatch job (`slurm/common.sh`). It sets `HF_HOME`, `UV_CACHE_DIR`, `CONDEX_RAW` (raw episodes) and `CONDEX_SCRATCH` (datasets, adapters, logs); without it they default to `$HOME`. Every sbatch header carries `--wckey=project-short-name:sub_4dpdata` and requests no CPUs or memory (this cluster gives the per-GPU default). CPU-only jobs set `-p cpu` themselves. For GPU jobs, give the GPU partition with `sbatch -p <gpu part> …`, or `export SBATCH_PARTITION=<gpu part>` in `~/.bashrc`.
+`env.local.sh` is sourced by the install scripts, by `slurm/submit.sh` and by every sbatch job (`slurm/common.sh`). It sets `HF_HOME`, `UV_CACHE_DIR`, `CONDEX_RAW` (raw episodes) and `CONDEX_SCRATCH` (datasets, adapters, logs); without it they default to `$HOME`. The `#SBATCH` headers carry only portable flags (name, time, `--gres=gpu:1`, `--array`, log path). Cluster-specific flags (partition, `--wckey`/`--account`, CPU requests) live in `CONDEX_SBATCH_CPU` / `CONDEX_SBATCH_GPU` in `env.local.sh`, and `slurm/submit.sh cpu|gpu <job.sbatch> [sbatch args]` adds them; `env.example.sh` has the values for the original cluster (`-p cpu`, required `--wckey`, no CPU/memory requests). The wrapper refuses a GPU job submitted as `cpu` and vice versa. Extra sbatch args go after the job script and override the env flags.
 
 | Phase | Job | Then |
 |---|---|---|
-| 0.2 | `sbatch slurm/phase0_probe.sbatch` | fill CALIBRATE fields in `configs/gr1.yaml` from `results/phase0/probe/*/probe.json`; look at the `mostclosed_*` PNGs |
-| 0.1+0.5 | `sbatch slurm/phase0_sweep.sbatch` (24 tasks × 20 eps) | `summarize.py sr results/phase0/sweep` (gate: within 10pp) |
-| 0.4–0.5 | `sbatch slurm/phase0_review.sbatch` | inspect boundary sheets; fill `failure_labels.csv`; set `selected_tasks` |
-| 1.1 | `sbatch --array=0-<n-1> slurm/phase1_collect.sbatch` | |
-| 1.2–1.4 | `sbatch slurm/phase1_render.sbatch` (`STYLE=…`) | set `force_clip_n` from `stats.json`; iterate the style; freeze it |
-| 2 | `sbatch slurm/phase2_labels.sbatch` | |
-| 3 | `LABELS=… NAME=ds1 sbatch --export=ALL slurm/phase3_dataset.sbatch` | |
-| 3.1 | `DATASET=ds1 CONDITION=overlay JUDGE=vlm sbatch --export=ALL slurm/phase3_eval.sbatch` (× plain/text/overlay, × claude) | `summarize.py judge results/phase3/eval` |
-| 3.2 | `DATASET=ds1 CONDITION=overlay SEED=0 sbatch --export=ALL slurm/phase3_train.sbatch` (× 3 conditions × 2 seeds) | eval with `ADAPTER=…` |
-| 4 | `CONDITION=overlay ADAPTER=… EPISODES=20 sbatch --export=ALL --array=0-<n-1> slurm/phase4_loop.sbatch` | A / P / O / X; then `STAGE=full EPISODES=50`, one job per `SEED` in 42, 43, 44, for P vs O only |
+| 0.2 | `slurm/submit.sh gpu slurm/phase0_probe.sbatch` | fill CALIBRATE fields in `configs/gr1.yaml` from `results/phase0/probe/*/probe.json`; look at the `mostclosed_*` PNGs |
+| 0.1+0.5 | `slurm/submit.sh gpu slurm/phase0_sweep.sbatch` (24 tasks × 20 eps) | `summarize.py sr results/phase0/sweep` (gate: within 10pp) |
+| 0.4–0.5 | `slurm/submit.sh cpu slurm/phase0_review.sbatch` | inspect boundary sheets; fill `failure_labels.csv`; set `selected_tasks` |
+| 1.1 | `slurm/submit.sh gpu slurm/phase1_collect.sbatch --array=0-<n-1>` | |
+| 1.2–1.4 | `slurm/submit.sh cpu slurm/phase1_render.sbatch` (`STYLE=…`) | set `force_clip_n` from `stats.json`; iterate the style; freeze it |
+| 2 | `slurm/submit.sh cpu slurm/phase2_labels.sbatch` | |
+| 3 | `LABELS=… NAME=ds1 slurm/submit.sh cpu slurm/phase3_dataset.sbatch --export=ALL` | |
+| 3.1 | `DATASET=ds1 CONDITION=overlay JUDGE=vlm slurm/submit.sh gpu slurm/phase3_eval.sbatch --export=ALL` (× plain/text/overlay, × claude) | `summarize.py judge results/phase3/eval` |
+| 3.2 | `DATASET=ds1 CONDITION=overlay SEED=0 slurm/submit.sh gpu slurm/phase3_train.sbatch --export=ALL` (× 3 conditions × 2 seeds) | eval with `ADAPTER=…` |
+| 4 | `CONDITION=overlay ADAPTER=… EPISODES=20 slurm/submit.sh gpu slurm/phase4_loop.sbatch --export=ALL --array=0-<n-1>` | A / P / O / X; then `STAGE=full EPISODES=50`, one job per `SEED` in 42, 43, 44, for P vs O only |
 
-Everything is submitted with `sbatch`; no `srun` or interactive session is needed. Monitor with `squeue -u $USER`, read logs in `slurm-<name>-<jobid>.out` (gitignored) and cancel with `scancel <jobid>`.
+Everything is submitted with `sbatch` (through `slurm/submit.sh`); no `srun` or interactive session is needed. Monitor with `squeue -u $USER`, read logs in `slurm-<name>-<jobid>.out` (gitignored) and cancel with `scancel <jobid>`.
 
 Every job writes its job id, commit, config path and style hash into its outputs.
