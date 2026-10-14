@@ -44,8 +44,9 @@ One-time, from a clean clone:
 
 ```bash
 cp env.example.sh env.local.sh        # gitignored: set BIG to the big disk (HF cache, uv cache, raw episodes, scratch)
-srun --cpus-per-task=8 --mem=32G -t 4:00:00 bash scripts/install_rldx.sh   # RLDX-1 @ cf67c31, sim venv, condex, checkpoint
-bash scripts/install_judge.sh                                              # vLLM + peft + Qwen3-VL-8B
+sbatch -p <part> -A <acct> slurm/install.sbatch          # RLDX-1 @ cf67c31, sim venv, condex, checkpoint; then vLLM + peft + Qwen3-VL-8B
+                                                          # (WHAT=rldx|judge to run one; node needs internet)
+sbatch -p <part> -A <acct> slurm/phase0_check.sbatch     # GPU node: EGL render check + test suite in the sim venv
 cp configs/costcaps.example.yaml configs/costcaps.yaml                     # set caps; ANTHROPIC_API_KEY in the env
 ```
 
@@ -63,5 +64,7 @@ cp configs/costcaps.example.yaml configs/costcaps.yaml                     # set
 | 3.1 | `DATASET=ds1 CONDITION=overlay JUDGE=vlm sbatch --export=ALL slurm/phase3_eval.sbatch` (× plain/text/overlay, × claude) | `summarize.py judge results/phase3/eval` |
 | 3.2 | `DATASET=ds1 CONDITION=overlay SEED=0 sbatch --export=ALL slurm/phase3_train.sbatch` (× 3 conditions × 2 seeds) | eval with `ADAPTER=…` |
 | 4 | `CONDITION=overlay ADAPTER=… EPISODES=20 sbatch --export=ALL --array=0-<n-1> slurm/phase4_loop.sbatch` | A / P / O / X; then `STAGE=full EPISODES=50`, one job per `SEED` in 42, 43, 44, for P vs O only |
+
+Everything is submitted with `sbatch`; no `srun` or interactive session is needed. Monitor with `squeue -u $USER`, read logs in `slurm-<name>-<jobid>.out` (gitignored) and cancel with `scancel <jobid>`.
 
 Every job writes its job id, commit, config path and style hash into its outputs.

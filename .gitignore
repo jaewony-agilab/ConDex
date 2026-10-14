@@ -7,3 +7,4 @@ third_party/
 configs/costcaps.yaml
 scratch/
 env.local.sh
+slurm-*.out
