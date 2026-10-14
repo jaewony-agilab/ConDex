@@ -43,12 +43,13 @@ python scripts/summarize.py sr results/phase0/sweep      # tables from committed
 One-time, from a clean clone:
 
 ```bash
+cp env.example.sh env.local.sh        # gitignored: set BIG to the big disk (HF cache, uv cache, raw episodes, scratch)
 srun --cpus-per-task=8 --mem=32G -t 4:00:00 bash scripts/install_rldx.sh   # RLDX-1 @ cf67c31, sim venv, condex, checkpoint
 bash scripts/install_judge.sh                                              # vLLM + peft + Qwen3-VL-8B
 cp configs/costcaps.example.yaml configs/costcaps.yaml                     # set caps; ANTHROPIC_API_KEY in the env
 ```
 
-Env: `CONDEX_RAW` (raw episodes, default `~/condex_raw`), `CONDEX_SCRATCH` (datasets, adapters, logs). Pass partition and account as `sbatch -p … -A …`.
+`env.local.sh` is sourced by the install scripts and by every sbatch job (`slurm/common.sh`). It sets `HF_HOME`, `UV_CACHE_DIR`, `CONDEX_RAW` (raw episodes) and `CONDEX_SCRATCH` (datasets, adapters, logs); without it they default to `$HOME`. Pass partition and account as `sbatch -p … -A …`.
 
 | Phase | Job | Then |
 |---|---|---|

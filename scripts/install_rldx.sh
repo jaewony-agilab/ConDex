@@ -6,10 +6,11 @@
 # 3. condex[llm] into the sim venv (harness, sensors, recorder, judge/planner clients)
 # 4. RLWRLD/RLDX-1-FT-GR1 into the HF cache
 # Rendering needs EGL and is checked at the start of every GPU job (slurm/common.sh), not here.
-# Env: CONDEX_THIRD_PARTY (default <repo>/third_party), HF_HOME (checkpoint cache).
+# Paths (HF_HOME, UV_CACHE_DIR, CONDEX_THIRD_PARTY, ...) come from <repo>/env.local.sh (see env.example.sh).
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$REPO/scripts/load_env.sh" "$REPO"
 TP="${CONDEX_THIRD_PARTY:-$REPO/third_party}"
 RLDX_COMMIT="cf67c31f7f168ebbca6d06e8c3c23914cb94435c"   # RLWRLD/RLDX-1 main, 2026-07-31
 RLDX="$TP/RLDX-1"

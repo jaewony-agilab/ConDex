@@ -4,6 +4,7 @@
 # Pins: vllm 0.11.0 is the first version pin for Qwen3-VL (not yet verified on our cluster).
 set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$REPO/scripts/load_env.sh" "$REPO"   # big-disk paths from env.local.sh
 TP="${CONDEX_THIRD_PARTY:-$REPO/third_party}"
 VENV="$TP/judge_venv"
 uv venv "$VENV" --python 3.10 --allow-existing

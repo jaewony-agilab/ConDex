@@ -6,3 +6,4 @@ third_party/
 .condex_paths
 configs/costcaps.yaml
 scratch/
+env.local.sh

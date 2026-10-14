@@ -4,11 +4,12 @@ set -euo pipefail
 
 REPO="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$REPO"
+source "$REPO/scripts/load_env.sh" "$REPO"   # big-disk paths from env.local.sh (gitignored)
 # shellcheck disable=SC1091
 source "$REPO/.condex_paths"   # RLDX, SIM_PY (install_rldx.sh), VLM_PY (install_judge.sh)
 export CONDEX_CONFIG="${CONDEX_CONFIG:-$REPO/configs/gr1.yaml}"
 export CONDEX_COSTCAPS="${CONDEX_COSTCAPS:-$REPO/configs/costcaps.yaml}"
-export CONDEX_RAW="${CONDEX_RAW:-$HOME/condex_raw}"          # raw episode dirs (cluster storage, never committed)
+export CONDEX_RAW="${CONDEX_RAW:-$HOME/condex_raw}"          # raw episode dirs (set in env.local.sh; never committed)
 export CONDEX_SCRATCH="${CONDEX_SCRATCH:-$HOME/condex_scratch}" # datasets, adapters, server logs
 export MUJOCO_GL=egl PYOPENGL_PLATFORM=egl NO_ALBUMENTATIONS_UPDATE=1
 JOB="${SLURM_JOB_ID:-local}${SLURM_ARRAY_TASK_ID:+_$SLURM_ARRAY_TASK_ID}"
